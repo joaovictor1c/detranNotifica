@@ -6,13 +6,17 @@ var cpf = process.env.CPF;
 var dataNascimento =  process.env.DATANASCIMENTO;
 var codAptidao =  process.env.CODAPTIDAO;
 var tipoExame =  process.env.TIPOEXAME;
-var month =  process.env.MONTH;
+var days =  process.env.DAYS;
 
 const retryTimeFail =  process.env.RETRYTIMEFAIL;
 const retryTimeSuccess = process.env.RETRYTIMESUCCESS;
 
 const telegramBotToken = process.env.TELEGRAMTOKEN;
-const telegramChatId =  process.env.TELEGRAMIDCHAT;
+const telegramChatId = process.env.TELEGRAMIDCHAT;
+
+const bot = new TelegramBot(telegramBotToken, {polling: true});
+
+var retry = 0;
 
 function agendarDetran(){
     axios({
@@ -25,19 +29,21 @@ function agendarDetran(){
       }).then(function (response) {
     
         const dayDetran = createDate(response.data[0]);
-    
-        const appointment = new Date();
-        appointment.setMonth(appointment.getMonth() + month);
+
+        const millisecondsToAdd = days * 24 * 60 * 60 * 1000;
+        const appointment = new Date(Date.now() + millisecondsToAdd );
+
         try{
-            if(appointment.getMilliseconds() > dayDetran.getMilliseconds()){
-                const bot = new TelegramBot(telegramBotToken, {polling: true});
-                    
+            if(appointment > dayDetran){
+
                 bot.sendMessage(telegramChatId, 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran);
 
                 console.log("Conseguiu encontrar agendamento, novo envio em 10 min");
                 setInterval(agendarDetran, retryTimeSuccess);
             }else{
                 console.log("Nao conseguiu encontrar agendamento, nova tentativa em 5 min");
+                retry += 1;
+                console.log("Numero de tentativas igual a: " + retry);
                 setInterval(agendarDetran, retryTimeFail);
             }
         }catch(error){
