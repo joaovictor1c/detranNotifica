@@ -17,12 +17,8 @@ const telegramChatId = process.env.TELEGRAMIDCHAT;
 
 const bot = new TelegramBot(
     telegramBotToken, 
-    {   polling: true, 
-        request: { agentClass: Agent},
-        AgentOptions : { 
-            socksHost : '127.0.0.1' ,
-            socksPort : 9150  
-        }
+    {   
+        polling: true
     }
 );
 
