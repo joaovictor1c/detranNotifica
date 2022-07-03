@@ -1,5 +1,6 @@
 const axios = require('axios');
 const TelegramBot =  require('node-telegram-bot-api');
+const Agent = require('socks5-https-client/lib/Agent')
 require('dotenv').config();
 
 var cpf = process.env.CPF;
@@ -14,7 +15,16 @@ const retryTimeSuccess = process.env.RETRYTIMESUCCESS;
 const telegramBotToken = process.env.TELEGRAMTOKEN;
 const telegramChatId = process.env.TELEGRAMIDCHAT;
 
-const bot = new TelegramBot(telegramBotToken, {polling: true});
+const bot = new TelegramBot(
+    telegramBotToken, 
+    {   polling: true, 
+        request: { agentClass: Agent},
+        AgentOptions : { 
+            socksHost : 'localhost' ,
+            socksPort : 1080  
+        }
+    }
+);
 
 var retry = 0;
 
