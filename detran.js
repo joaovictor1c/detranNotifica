@@ -15,12 +15,7 @@ const retryTimeSuccess = process.env.RETRYTIMESUCCESS;
 const telegramBotToken = process.env.TELEGRAMTOKEN;
 const telegramChatId = process.env.TELEGRAMIDCHAT;
 
-const bot = new TelegramBot(
-    telegramBotToken, 
-    {   
-        polling: true
-    }
-);
+
 
 var retry = 0;
 
@@ -42,7 +37,12 @@ function agendarDetran(){
 
         try{
             if(appointment > dayDetran){
-
+                const bot = new TelegramBot(
+                    telegramBotToken, 
+                    {   
+                        polling: true
+                    }
+                );
                 bot.sendMessage(telegramChatId, 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran);
 
                 console.log("Conseguiu encontrar agendamento, novo envio em 10 min");
