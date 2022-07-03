@@ -20,8 +20,8 @@ const bot = new TelegramBot(
     {   polling: true, 
         request: { agentClass: Agent},
         AgentOptions : { 
-            socksHost : 'localhost' ,
-            socksPort : 1080  
+            socksHost : '127.0.0.1' ,
+            socksPort : 9150  
         }
     }
 );
