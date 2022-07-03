@@ -56,6 +56,8 @@ function agendarDetran(){
             console.log("Erro na aplicacao");
             console.log(error);
         }
+    }).catch(function (e){
+        console.log(e);
     });
 }
 
