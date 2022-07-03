@@ -33,8 +33,9 @@ function agendarDetran(){
         "&tipoExame=" + tipoExame,
         responseType: "application/json",
       }).then(function (response) {
-    
+        
         const dayDetran = createDate(response.data[0]);
+        console.log("dia de agendamento recuperado com sucesso : " + dayDetran)
 
         const millisecondsToAdd = days * 24 * 60 * 60 * 1000;
         const appointment = new Date(Date.now() + millisecondsToAdd );
