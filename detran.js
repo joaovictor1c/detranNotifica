@@ -15,51 +15,52 @@ const retryTimeSuccess = process.env.RETRYTIMESUCCESS;
 const telegramBotToken = process.env.TELEGRAMTOKEN;
 const telegramChatId = process.env.TELEGRAMIDCHAT;
 
-
-
 var retry = 0;
+var currentIntervalId;
 
-function agendarDetran(){
-    axios({
+async function agendarDetran(){
+
+    clearInterval(currentIntervalId);
+
+    const response = await axios({
         method: "POST",
         url: "https://online7.detran.pe.gov.br/MvcHabilitacao/Agendamento/PesquisarDataDisponibilidadeTecnica?cpf="+ cpf +
         "&dataNascimento=" + dataNascimento + 
         "&codAptidao=" + codAptidao + 
         "&tipoExame=" + tipoExame,
         responseType: "application/json",
-      }).then(function (response) {
+    })
         
-        const dayDetran = createDate(response.data[0]);
-        console.log("dia de agendamento recuperado com sucesso : " + dayDetran)
+    const dayDetran = createDate(response.data[0]);
+    console.log("dia de agendamento recuperado com sucesso : " + dayDetran)
 
-        const millisecondsToAdd = days * 24 * 60 * 60 * 1000;
-        const appointment = new Date(Date.now() + millisecondsToAdd );
+    const millisecondsToAdd = days * 24 * 60 * 60 * 1000;
+    const appointment = new Date(Date.now() + millisecondsToAdd);
 
-        try{
-            if(appointment > dayDetran){
-                const bot = new TelegramBot(
-                    telegramBotToken, 
-                    {   
-                        polling: true
-                    }
-                );
-                bot.sendMessage(telegramChatId, 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran);
+    try {
+        if(appointment > dayDetran){
+            const bot = new TelegramBot(
+                telegramBotToken, 
+                {   
+                    polling: true
+                }
+            );
 
-                console.log("Conseguiu encontrar agendamento, novo envio em 10 min");
-                setInterval(agendarDetran, retryTimeSuccess);
-            }else{
-                console.log("Nao conseguiu encontrar agendamento, nova tentativa em 5 min");
-                retry += 1;
-                console.log("Numero de tentativas igual a: " + retry);
-                setInterval(agendarDetran, retryTimeFail);
-            }
-        }catch(error){
-            console.log("Erro na aplicacao");
-            console.log(error);
+            bot.sendMessage(telegramChatId, 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran);
+
+            console.log("Conseguiu encontrar agendamento, novo envio em 10 min");
+            
+            currentIntervalId = setInterval(agendarDetran, retryTimeSuccess);
+        }else{
+            console.log("Nao conseguiu encontrar agendamento, nova tentativa em 5 min");
+            retry += 1;
+            console.log("Numero de tentativas igual a: " + retry);
+            currentIntervalId = setInterval(agendarDetran, retryTimeFail);
         }
-    }).catch(function (e){
-        console.log(e);
-    });
+    } catch(error){
+        console.log("Erro na aplicacao");
+        console.log(error);
+    }
 }
 
 function createDate(date){
