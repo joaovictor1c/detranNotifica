@@ -8,8 +8,6 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
-    "dotenv": "^16.0.1",
-    "node-telegram-bot-api": "^0.58.0",
-    "socks5-https-client": "^1.2.1"
+    "dotenv": "^16.0.1"
   }
 }

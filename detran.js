@@ -1,6 +1,4 @@
 const axios = require('axios');
-const TelegramBot =  require('node-telegram-bot-api');
-const Agent = require('socks5-https-client/lib/Agent')
 require('dotenv').config();
 
 var cpf = process.env.CPF;
@@ -39,20 +37,19 @@ async function agendarDetran(){
 
     try {
         if(appointment > dayDetran){
-            const bot = new TelegramBot(
-                telegramBotToken, 
-                {   
-                    polling: true
-                }
-            );
+            let message = 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran
+            const response = await axios({
+                method: "GET",
+                url: "https://api.telegram.org/bot"+ telegramBotToken +"/sendMessage?text="+ message +"&chat_id=" + telegramChatId,
+                responseType: "application/json",
+            })
 
-            bot.sendMessage(telegramChatId, 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran);
-
-            console.log("Conseguiu encontrar agendamento, novo envio em 10 min");
+            console.log(response)
+            console.log("Conseguiu encontrar agendamento para o dia"+ dayDetran +", verifique o telegram");
             
             currentIntervalId = setInterval(agendarDetran, retryTimeSuccess);
         }else{
-            console.log("Nao conseguiu encontrar agendamento, nova tentativa em 5 min");
+            console.log("Nao conseguiu encontrar agendamento");
             retry += 1;
             console.log("Numero de tentativas igual a: " + retry);
             currentIntervalId = setInterval(agendarDetran, retryTimeFail);
