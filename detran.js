@@ -30,22 +30,23 @@ async function agendarDetran(){
     })
         
     const dayDetran = createDate(response.data[0]);
-    console.log("dia de agendamento recuperado com sucesso : " + dayDetran)
+    console.log("dia de agendamento recuperado com sucesso : " + formatDate(dayDetran))
 
     const millisecondsToAdd = days * 24 * 60 * 60 * 1000;
     const appointment = new Date(Date.now() + millisecondsToAdd);
+    console.log("horario atual é de: " +  appointment.getHours());
 
     try {
         if(appointment > dayDetran){
-            let message = 'Existe um agendamento disponivel para carro no detran no dia ' + dayDetran
-            const response = await axios({
+            const message = 'Existe um agendamento disponivel para carro no detran no dia ' + formatDate(dayDetran);
+
+            await axios({
                 method: "GET",
                 url: "https://api.telegram.org/bot"+ telegramBotToken +"/sendMessage?text="+ message +"&chat_id=" + telegramChatId,
                 responseType: "application/json",
             })
 
-            console.log(response)
-            console.log("Conseguiu encontrar agendamento para o dia"+ dayDetran +", verifique o telegram");
+            console.log("Conseguiu encontrar agendamento para o dia "+  formatDate(dayDetran) +", verifique o telegram");
             
             currentIntervalId = setInterval(agendarDetran, retryTimeSuccess);
         }else{
@@ -64,6 +65,13 @@ function createDate(date){
     let d = date.split("/");
     let dat = new Date(d[2] + '/' + d[1] + '/' + d[0]);
     return dat;     
+}
+
+function formatDate(date) {
+    var year = date.getFullYear().toString();
+    var month = (date.getMonth() + 101).toString().substring(1);
+    var day = (date.getDate() + 100).toString().substring(1);
+    return day + "/" + month + "/" + year;
 }
 
 agendarDetran();
