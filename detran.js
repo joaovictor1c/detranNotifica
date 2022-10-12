@@ -38,6 +38,7 @@ async function agendarDetran(){
 
     try {
         if(appointment > dayDetran){
+
             const message = 'Existe um agendamento disponivel para carro no detran no dia ' + formatDate(dayDetran);
 
             await axios({
@@ -73,6 +74,15 @@ function formatDate(date) {
     var day = (date.getDate() + 100).toString().substring(1);
     return day + "/" + month + "/" + year;
 }
+
+// function verificarAgendamento(cpf, dataNascimento){
+//     await axios({
+//         method: "POST",
+//         url: "https://online7.detran.pe.gov.br/MvcHabilitacao/Agendamento/ListaHorarioDisponibilidadeTeorica",
+//         responseType: "application/json",
+//         headers: { 'content-type': 'application/x-www-form-urlencoded' }
+//     })
+// }
 
 agendarDetran();
 
