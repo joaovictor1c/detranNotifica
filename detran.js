@@ -1,4 +1,5 @@
 const axios = require('axios');
+const qs = require('qs');
 require('dotenv').config();
 
 var cpf = process.env.CPF;
@@ -38,15 +39,36 @@ async function agendarDetran(){
 
     try {
         if(appointment > dayDetran){
-            const message = 'Existe um agendamento disponivel para carro no detran no dia ' + formatDate(dayDetran);
 
-            await axios({
-                method: "GET",
-                url: "https://api.telegram.org/bot"+ telegramBotToken +"/sendMessage?text="+ message +"&chat_id=" + telegramChatId,
-                responseType: "application/json",
-            })
+            console.log(response.data)
+            for(let i = 0; response.data.length > i; i++){
+                
+                let params = new URLSearchParams()
+                params.append("cpfUsuario", cpf)
+                params.append("dataNascimentoUsuario", dataNascimento)
+                params.append("dataAgendamento", toISOFormat(response.data[i]))
+                params.append("tipoExame", "2")
 
-            console.log("Conseguiu encontrar agendamento para o dia "+  formatDate(dayDetran) +", verifique o telegram");
+                console.log("Chamando servico do detran para a data: " + toISOFormat(response.data[i]))
+
+                const responseHorario = await axios({
+                    method: "POST",
+                    url: "https://online7.detran.pe.gov.br/MvcHabilitacao/Agendamento/ListaHorarioDisponibilidadeTeorica",
+                    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                    params,
+                    responseType: "application/json",
+                })
+                
+                responseHorario.data.map( e =>{
+                    if(e.Text.includes("RECIFE")){
+                        i = 100;
+                        console.log("Data para Recife foi encontrado, enviando notificacao para o telegram")
+                        callTelegram(dayDetran);
+                    }
+                    return;
+                }); 
+                
+            }
             
             currentIntervalId = setInterval(agendarDetran, retryTimeSuccess);
         }else{
@@ -73,6 +95,29 @@ function formatDate(date) {
     var day = (date.getDate() + 100).toString().substring(1);
     return day + "/" + month + "/" + year;
 }
+
+async function callTelegram(dayDetran){
+    const message = 'Existe um agendamento disponivel para carro no detran no dia ' + formatDate(dayDetran);
+
+    await axios({
+        method: "GET",
+        url: "https://api.telegram.org/bot"+ telegramBotToken +"/sendMessage?text="+ message +"&chat_id=" + telegramChatId,
+        responseType: "application/json",
+    })
+
+    console.log("Conseguiu encontrar agendamento para o dia "+  formatDate(dayDetran) +", verifique o telegram");
+}
+
+function toISOFormat(dateTimeString) {
+    // Primeiro, dividimos a data completa em duas partes:
+    const [date, time] = dateTimeString.split(' ');
+  
+    // Dividimos a data em dia, mês e ano:
+    const [DD, MM, YYYY] = date.split('/');
+  
+    // Retornamos a data formatada em um padrão compatível com ISO:
+    return `${YYYY}-${MM}-${DD}`;
+  }
 
 agendarDetran();
 
